@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const { User, RefreshToken } = require("../models");
-const logger = require("../logger");
 const bcrypt = require("bcrypt");
 const { errorHandler, withTransaction } = require("../util");
 const { HttpError } = require("../error");
