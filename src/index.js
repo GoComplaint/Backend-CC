@@ -15,14 +15,14 @@ async function startServer() {
 		logger.info("Database connected ...");
 
 		// Create Table
-		// await User.sync();
-		// await RefreshToken.sync();
+		await User.sync();
+		await RefreshToken.sync();
 		await Complaint.sync();
-		// await Comment.sync();
-		// await DetailComplaint.sync();
-		// await DetailPosting.sync();
+		await Comment.sync();
+		await DetailComplaint.sync();
+		await DetailPosting.sync();
 		await Profile.sync();
-		// await Lov.sync();
+		await Lov.sync();
 	} catch (error) {
 		logger.error(error);
 	}
