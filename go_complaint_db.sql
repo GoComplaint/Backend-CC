@@ -16,6 +16,73 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/`go_complaint_db` /*!40100 DEFAULT CHARA
 
 USE `go_complaint_db`;
 
+/*Table structure for table `m_comment` */
+
+DROP TABLE IF EXISTS `m_comment`;
+
+CREATE TABLE `m_comment` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `comment` varchar(255) DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Table structure for table `m_complaint` */
+
+DROP TABLE IF EXISTS `m_complaint`;
+
+CREATE TABLE `m_complaint` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `complaint` varchar(255) DEFAULT NULL,
+  `category` varchar(255) DEFAULT NULL,
+  `prediction` varchar(255) DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Table structure for table `m_detail_complaint` */
+
+DROP TABLE IF EXISTS `m_detail_complaint`;
+
+CREATE TABLE `m_detail_complaint` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `complaint_id` int(11) DEFAULT NULL,
+  `comment_id` int(11) DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Table structure for table `m_detail_posting` */
+
+DROP TABLE IF EXISTS `m_detail_posting`;
+
+CREATE TABLE `m_detail_posting` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `complaint_id` int(11) DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Table structure for table `m_profile` */
+
+DROP TABLE IF EXISTS `m_profile`;
+
+CREATE TABLE `m_profile` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(255) DEFAULT NULL,
+  `first_name` varchar(255) DEFAULT NULL,
+  `last_name` varchar(255) DEFAULT NULL,
+  `data_setting` text DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /*Table structure for table `m_refresh_token` */
 
 DROP TABLE IF EXISTS `m_refresh_token`;
@@ -27,7 +94,7 @@ CREATE TABLE `m_refresh_token` (
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Table structure for table `m_user` */
 
@@ -41,7 +108,21 @@ CREATE TABLE `m_user` (
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Table structure for table `s_lov_value` */
+
+DROP TABLE IF EXISTS `s_lov_value`;
+
+CREATE TABLE `s_lov_value` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `category` varchar(255) DEFAULT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  `remark` varchar(255) DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
