@@ -6,7 +6,16 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const { db } = require("./config/database");
-const { User, RefreshToken, Complaint, Comment, DetailComplaint, DetailPosting, Profile, Lov } = require("./models/index.js");
+const {
+	User,
+	RefreshToken,
+	Complaint,
+	Comment,
+	DetailComplaint,
+	DetailPosting,
+	Profile,
+	Lov,
+} = require("./models/index.js");
 
 async function startServer() {
 	// Connect Database
@@ -31,6 +40,10 @@ async function startServer() {
 	app.use(express.json());
 
 	app.use("/api", routes);
+
+	app.get("/", (req, res) => {
+		res.send("Backend 1 finally deployed");
+	});
 
 	app.use((err, req, res, next) => {
 		logger.error(err.stack);
