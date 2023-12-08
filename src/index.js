@@ -42,6 +42,7 @@ async function startServer() {
 	app.use("/api", routes);
 
 	app.get("/", (req, res) => {
+		logger.info("Backend 1 finally deployed");
 		res.send("Backend 1 finally deployed");
 	});
 
