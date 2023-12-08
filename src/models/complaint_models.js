@@ -10,6 +10,9 @@ const Complaint = db.define(
 		complaint: {
 			type: DataTypes.STRING,
 		},
+		location: {
+			type: DataTypes.STRING,
+		},
 		file: {
 			type: DataTypes.STRING,
 		},
@@ -21,6 +24,7 @@ const Complaint = db.define(
 		},
 		like: {
 			type: DataTypes.INTEGER,
+			defaultValue: 0,
 		},
 	},
 	{

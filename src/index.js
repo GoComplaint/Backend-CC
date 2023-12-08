@@ -28,8 +28,6 @@ async function startServer() {
 		await RefreshToken.sync();
 		await Complaint.sync();
 		await Comment.sync();
-		await DetailComplaint.sync();
-		await DetailPosting.sync();
 		await Profile.sync();
 		await Lov.sync();
 	} catch (error) {

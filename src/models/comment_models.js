@@ -15,6 +15,7 @@ const Comment = db.define(
 		},
 		like: {
 			type: DataTypes.INTEGER,
+			defaultValue: 0,
 		},
 	},
 	{

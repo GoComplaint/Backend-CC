@@ -9,6 +9,14 @@ const register = withTransaction(async (req, res, transaction) => {
 	if (password !== confPassword)
 		throw new HttpError(400, "Password dan Konfirmasi Password tidak cocok");
 
+	// Email Validation
+	const findEmail = await User.findOne({
+		where: {
+			email: email,
+		},
+	});
+	if (findEmail.length !== null) throw new HttpError(400, "Email sudah terdaftar");
+
 	const salt = await bcrypt.genSalt();
 	const hashPassword = await bcrypt.hash(password, salt);
 

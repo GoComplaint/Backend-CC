@@ -2,8 +2,6 @@ const {
 	User,
 	Complaint,
 	Comment,
-	DetailComplaint,
-	DetailPosting,
 } = require("../models");
 const { errorHandler, withTransaction } = require("../util");
 const { HttpError } = require("../error");
@@ -11,13 +9,25 @@ const { Op } = require("sequelize");
 
 const getAllComplaints = errorHandler(async (req, res) => {
 	// GET PARAMS
-	const { limit, page, start_id } = req.params;
+	let { limit, page } = req.body;
+
+	let offsetComplaint = (page - 1) * limit;
+	if (!page) offsetComplaint = 0;
 
 	// GET ALL COMPLAINT
-	const complaints = await Complaint.findAll();
+	const complaints = await Complaint.findAll({
+		order: [["createdAt", "DESC"]],
+		limit: limit,
+		offset: offsetComplaint,
+	});
+
+	if (!complaints[0]) throw new HttpError(400, "Data limit");
 
 	// RETURN THE RESULT
-	return { complaints };
+	return {
+		start_id: complaints[0].id,
+		complaints,
+	};
 });
 
 const getComplaint = errorHandler(async (req, res) => {
@@ -59,17 +69,16 @@ const searchComplaint = errorHandler(async (req, res) => {
 
 const addComplaint = errorHandler(async (req, res) => {
 	// GET DATA
-	const { complaint, category } = req.body;
-	if (!complaint && !category) throw new HttpError(400, "Bad Request");
+	const { complaint, category, location } = req.body;
+	if (!complaint && !category && !location)
+		throw new HttpError(400, "Bad Request");
 
 	// INSERT DATA
 	const complaintDoc = await Complaint.create({
+		user_id: req.userId,
 		complaint: complaint,
 		category: category,
-	});
-	const detailDoc = await DetailPosting.create({
-		user_id: req.userId,
-		complaint_id: complaintDoc.id,
+		location: location,
 	});
 
 	// RETURN THE RESULT
@@ -117,11 +126,6 @@ const deleteComplaint = withTransaction(async (req, res) => {
 	await Complaint.destroy({
 		where: {
 			id: id,
-		},
-	});
-	await DetailPosting.destroy({
-		where: {
-			complaint_id: id,
 		},
 	});
 	await Comment.destroy({
