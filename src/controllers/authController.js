@@ -7,7 +7,7 @@ const { HttpError } = require("../error");
 const register = withTransaction(async (req, res, transaction) => {
 	const { username, email, password, confPassword } = req.body;
 	if (password !== confPassword)
-		throw new HttpError(400, "Password dan Konfirmasi Password tidak cocok");
+		throw new HttpError(400, "Password and Confirmation Password is not equal");
 
 	// Email Validation
 	const findEmail = await User.findOne({
@@ -15,7 +15,7 @@ const register = withTransaction(async (req, res, transaction) => {
 			email: email,
 		},
 	});
-	if (findEmail.length !== null) throw new HttpError(400, "Email sudah terdaftar");
+	if (findEmail.length !== null) throw new HttpError(400, "Email already registered");
 
 	const salt = await bcrypt.genSalt();
 	const hashPassword = await bcrypt.hash(password, salt);
@@ -47,14 +47,14 @@ const register = withTransaction(async (req, res, transaction) => {
 });
 
 const login = withTransaction(async (req, res, transaction) => {
-	const { username, password } = req.body;
+	const { email, password } = req.body;
 	const userDoc = await User.findOne({
 		where: {
-			username: username,
+			email: email,
 		},
 	});
 
-	if (!userDoc) throw new HttpError(401, "Salah Username");
+	if (!userDoc) throw new HttpError(401, "Email not found");
 
 	await verifyPassword(userDoc.password, password);
 
@@ -169,7 +169,7 @@ function createRefreshToken(userId, refreshTokenId) {
 
 const verifyPassword = async (hashPassword, rawPassword) => {
 	const match = await bcrypt.compare(rawPassword, hashPassword);
-	if (!match) throw new HttpError(401, "Salah Password");
+	if (!match) throw new HttpError(401, "Wrong Password");
 };
 
 const validateRefreshToken = (token) => {

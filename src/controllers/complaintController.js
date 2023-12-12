@@ -1,11 +1,8 @@
-const {
-	User,
-	Complaint,
-	Comment,
-} = require("../models");
+const { User, Complaint, Comment } = require("../models");
 const { errorHandler, withTransaction } = require("../util");
 const { HttpError } = require("../error");
 const { Op } = require("sequelize");
+const tf = require("@tensorflow/tfjs");
 
 const getAllComplaints = errorHandler(async (req, res) => {
 	// GET PARAMS
@@ -23,43 +20,77 @@ const getAllComplaints = errorHandler(async (req, res) => {
 
 	if (!complaints[0]) throw new HttpError(400, "Data limit");
 
+	const complaints_user = await Promise.all(
+		complaints.map(async (c) => {
+			let user = await User.findOne({
+				where: {
+					id: c.user_id,
+				},
+			});
+
+			let username = user.username;
+
+			return { ...c.dataValues, username };
+		})
+	);
+
 	// RETURN THE RESULT
 	return {
-		start_id: complaints[0].id,
-		complaints,
+		complaints: complaints_user,
 	};
 });
 
 const getComplaint = errorHandler(async (req, res) => {
 	// GET PARAMS
 	const { id } = req.params;
-	if (!id) throw new HttpError(401, "ID tidak ditemukan");
+	if (!id) throw new HttpError(401, "ID not found");
 
 	// GET DATA FOR COMMENT AND COMPLAINT
-	const complaint = await Complaint.findAll({
+	const complaint = await Complaint.findOne({
 		where: {
 			id: id,
 		},
 	});
+
+	const user = await User.findOne({
+		where: {
+			id: complaint.user_id,
+		},
+	});
+	const username = user.username;
+
 	const comment = await Comment.findAll({
 		where: {
 			complaint_id: id,
 		},
 	});
+	const comments = await Promise.all(
+		comment.map(async (c) => {
+			let userComment = await User.findOne({
+				where: {
+					id: c.user_id,
+				},
+			});
+
+			userComment = userComment.username;
+
+			return { ...c.dataValues, username: userComment };
+		})
+	);
 
 	// RETURN THE DATA
-	return { complaint, comment };
+	return { complaint: { ...complaint.dataValues, username }, comments };
 });
 
 const searchComplaint = errorHandler(async (req, res) => {
 	// GET DATA
 	const { searchTerm } = req.body;
-	if (!searchTerm) throw new HttpError(400, "Bad Request");
+	if (!searchTerm) throw new HttpError(400, "Incomplete Data");
 
 	const complaintDoc = await Complaint.findAll({
 		where: {
 			complaint: {
-				[Op.like]: `%${searchTerm.complaint}%`,
+				[Op.like]: `%${searchTerm}%`,
 			},
 		},
 	});
@@ -69,15 +100,19 @@ const searchComplaint = errorHandler(async (req, res) => {
 
 const addComplaint = errorHandler(async (req, res) => {
 	// GET DATA
-	const { complaint, category, location } = req.body;
-	if (!complaint && !category && !location)
-		throw new HttpError(400, "Bad Request");
+	let { complaint, category, location } = req.body;
+	if (!complaint || !category || !location)
+		throw new HttpError(400, "Incomplete Data");
+
+	// MAX COMPLAINT 255
+	if (complaint.length > 255)
+		throw new HttpError(400, "Complaint Text Data Size Limit Exceeded (255)");
 
 	// INSERT DATA
 	const complaintDoc = await Complaint.create({
 		user_id: req.userId,
 		complaint: complaint,
-		category: category,
+		category: category.toUpperCase(),
 		location: location,
 	});
 
@@ -88,7 +123,11 @@ const addComplaint = errorHandler(async (req, res) => {
 const addComment = withTransaction(async (req, res) => {
 	// GET DATA
 	const { id, comment } = req.body;
-	if (!id && !comment) throw new HttpError(400, "Bad Request");
+	if (!id || !comment) throw new HttpError(400, "Incomplete Data");
+
+	// MAX COMPLAINT 255
+	if (comment.length > 255)
+		throw new HttpError(400, "Comment Text Data Size Limit Exceeded (255)");
 
 	// VERIFY FUNCTION
 	const result = await Complaint.findOne({
@@ -112,7 +151,7 @@ const addComment = withTransaction(async (req, res) => {
 const deleteComplaint = withTransaction(async (req, res) => {
 	// GET DATA
 	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Bad Request");
+	if (!id) throw new HttpError(400, "Incomplete Data");
 
 	// VERIFY FUNCTION
 	const result = await Complaint.findOne({
@@ -139,7 +178,7 @@ const deleteComplaint = withTransaction(async (req, res) => {
 
 const deleteComment = errorHandler(async (req, res) => {
 	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Bad Request");
+	if (!id) throw new HttpError(400, "Incomplete Data");
 
 	// DELETE COMMENT
 	await Comment.destroy({
@@ -153,7 +192,7 @@ const deleteComment = errorHandler(async (req, res) => {
 
 const likeComplaint = errorHandler(async (req, res) => {
 	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Bad Request");
+	if (!id) throw new HttpError(400, "Incomplete Data");
 
 	// VERIFY FUNCTION
 	const complaintDoc = await Complaint.findOne({
@@ -171,7 +210,7 @@ const likeComplaint = errorHandler(async (req, res) => {
 
 const likeComment = errorHandler(async (req, res) => {
 	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Bad Request");
+	if (!id) throw new HttpError(400, "Incomplete Data");
 
 	// VERIFY FUNCTION
 	const commentDoc = await Comment.findOne({
@@ -189,7 +228,7 @@ const likeComment = errorHandler(async (req, res) => {
 
 const dislikeComplaint = errorHandler(async (req, res) => {
 	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Bad Request");
+	if (!id) throw new HttpError(400, "Incomplete Data");
 
 	// VERIFY FUNCTION
 	const complaintDoc = await Complaint.findOne({
@@ -207,7 +246,7 @@ const dislikeComplaint = errorHandler(async (req, res) => {
 
 const dislikeComment = errorHandler(async (req, res) => {
 	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Bad Request");
+	if (!id) throw new HttpError(400, "Incomplete Data");
 
 	// VERIFY FUNCTION
 	const commentDoc = await Comment.findOne({
@@ -219,6 +258,28 @@ const dislikeComment = errorHandler(async (req, res) => {
 
 	commentDoc.like -= 1;
 	await commentDoc.save();
+
+	return { success: true };
+});
+
+const statusComplaint = errorHandler(async (req, res) => {
+	const { id, status } = req.body;
+	if (!id || !status) throw new HttpError(400, "Incomplete Data");
+
+	// STATUS :
+	// N = OPEN
+	// P = PENDING
+	// Y = COMPLETE
+
+	const complaintDoc = await Complaint.findOne({
+		where: {
+			id: id,
+		},
+	});
+	if (!complaintDoc) throw new HttpError(400, "ID Not Found");
+
+	complaintDoc.status = status;
+	await complaintDoc.save();
 
 	return { success: true };
 });
@@ -235,4 +296,5 @@ module.exports = {
 	likeComment,
 	dislikeComplaint,
 	dislikeComment,
+	statusComplaint,
 };

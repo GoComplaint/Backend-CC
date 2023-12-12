@@ -47,4 +47,6 @@ router.put(
 	controllers.complaint.dislikeComment
 );
 
+router.put("/status", verifyAccessToken, controllers.complaint.statusComplaint);
+
 module.exports = router;
