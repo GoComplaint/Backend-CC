@@ -6,7 +6,8 @@ const tf = require("@tensorflow/tfjs");
 
 const getAllComplaints = errorHandler(async (req, res) => {
 	// GET PARAMS
-	let { limit, page } = req.body;
+	let limit = parseInt(req.query.limit);
+	let page = parseInt(req.query.page);
 
 	let offsetComplaint = (page - 1) * limit;
 	if (!page) offsetComplaint = 0;
@@ -84,13 +85,13 @@ const getComplaint = errorHandler(async (req, res) => {
 
 const searchComplaint = errorHandler(async (req, res) => {
 	// GET DATA
-	const { searchTerm } = req.body;
-	if (!searchTerm) throw new HttpError(400, "Incomplete Data");
+	const complaint = req.query.complaint;
+	if (!complaint) throw new HttpError(400, "Incomplete Data");
 
 	const complaintDoc = await Complaint.findAll({
 		where: {
 			complaint: {
-				[Op.like]: `%${searchTerm}%`,
+				[Op.like]: `%${complaint}%`,
 			},
 		},
 	});
