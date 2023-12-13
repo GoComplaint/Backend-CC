@@ -2,24 +2,31 @@ const { User, Complaint, Comment } = require("../models");
 const { errorHandler, withTransaction } = require("../util");
 const { HttpError } = require("../error");
 const { Op } = require("sequelize");
-const tf = require("@tensorflow/tfjs");
 
 const getAllComplaints = errorHandler(async (req, res) => {
 	// GET PARAMS
 	let limit = parseInt(req.query.limit);
 	let page = parseInt(req.query.page);
 
-	let offsetComplaint = (page - 1) * limit;
-	if (!page) offsetComplaint = 0;
+	let complaints;
 
-	// GET ALL COMPLAINT
-	const complaints = await Complaint.findAll({
-		order: [["createdAt", "DESC"]],
-		limit: limit,
-		offset: offsetComplaint,
-	});
+	if (!limit) {
+		complaints = await Complaint.findAll({
+			order: [["createdAt", "DESC"]],
+		});
+	} else {
+		let offsetComplaint = (page - 1) * limit;
+		if (!page) offsetComplaint = 0;
 
-	if (!complaints[0]) throw new HttpError(400, "Data limit");
+		// GET ALL COMPLAINT
+		complaints = await Complaint.findAll({
+			order: [["createdAt", "DESC"]],
+			limit: limit,
+			offset: offsetComplaint,
+		});
+
+		if (!complaints[0]) throw new HttpError(400, "Data limit");
+	}
 
 	const complaints_user = await Promise.all(
 		complaints.map(async (c) => {
@@ -121,34 +128,6 @@ const addComplaint = errorHandler(async (req, res) => {
 	return { success: true };
 });
 
-const addComment = withTransaction(async (req, res) => {
-	// GET DATA
-	const { id, comment } = req.body;
-	if (!id || !comment) throw new HttpError(400, "Incomplete Data");
-
-	// MAX COMPLAINT 255
-	if (comment.length > 255)
-		throw new HttpError(400, "Comment Text Data Size Limit Exceeded (255)");
-
-	// VERIFY FUNCTION
-	const result = await Complaint.findOne({
-		where: {
-			id: id,
-		},
-	});
-	if (!result) throw new HttpError(400, "ID Not Found");
-
-	// INSERT DATA to Comment, DetailComplaint
-	const commentDoc = await Comment.create({
-		user_id: req.userId,
-		complaint_id: id,
-		comment: comment,
-	});
-
-	// RETURN THE RESULT
-	return { success: true };
-});
-
 const deleteComplaint = withTransaction(async (req, res) => {
 	// GET DATA
 	const { id } = req.params;
@@ -177,20 +156,6 @@ const deleteComplaint = withTransaction(async (req, res) => {
 	return { success: true };
 });
 
-const deleteComment = errorHandler(async (req, res) => {
-	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Incomplete Data");
-
-	// DELETE COMMENT
-	await Comment.destroy({
-		where: {
-			id: id,
-		},
-	});
-
-	return { success: true };
-});
-
 const likeComplaint = errorHandler(async (req, res) => {
 	const { id } = req.params;
 	if (!id) throw new HttpError(400, "Incomplete Data");
@@ -209,24 +174,6 @@ const likeComplaint = errorHandler(async (req, res) => {
 	return { success: true };
 });
 
-const likeComment = errorHandler(async (req, res) => {
-	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Incomplete Data");
-
-	// VERIFY FUNCTION
-	const commentDoc = await Comment.findOne({
-		where: {
-			id: id,
-		},
-	});
-	if (!commentDoc) throw new HttpError(400, "ID Not Found");
-
-	commentDoc.like += 1;
-	await commentDoc.save();
-
-	return { success: true };
-});
-
 const dislikeComplaint = errorHandler(async (req, res) => {
 	const { id } = req.params;
 	if (!id) throw new HttpError(400, "Incomplete Data");
@@ -241,24 +188,6 @@ const dislikeComplaint = errorHandler(async (req, res) => {
 
 	complaintDoc.like -= 1;
 	await complaintDoc.save();
-
-	return { success: true };
-});
-
-const dislikeComment = errorHandler(async (req, res) => {
-	const { id } = req.params;
-	if (!id) throw new HttpError(400, "Incomplete Data");
-
-	// VERIFY FUNCTION
-	const commentDoc = await Comment.findOne({
-		where: {
-			id: id,
-		},
-	});
-	if (!commentDoc) throw new HttpError(400, "ID Not Found");
-
-	commentDoc.like -= 1;
-	await commentDoc.save();
 
 	return { success: true };
 });
@@ -289,13 +218,9 @@ module.exports = {
 	getAllComplaints,
 	getComplaint,
 	addComplaint,
-	addComment,
 	searchComplaint,
 	deleteComplaint,
-	deleteComment,
 	likeComplaint,
-	likeComment,
 	dislikeComplaint,
-	dislikeComment,
 	statusComplaint,
 };

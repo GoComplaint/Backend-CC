@@ -11,8 +11,6 @@ const {
 	RefreshToken,
 	Complaint,
 	Comment,
-	DetailComplaint,
-	DetailPosting,
 	Profile,
 	Lov,
 } = require("./models/index.js");
