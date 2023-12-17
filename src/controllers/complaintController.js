@@ -2,6 +2,17 @@ const { User, Complaint, Comment } = require("../models");
 const { errorHandler, withTransaction } = require("../util");
 const { HttpError } = require("../error");
 const { Op } = require("sequelize");
+const { processFiles } = require("../middlewares");
+const { Storage } = require("@google-cloud/storage");
+const { format } = require("util");
+const { P } = require("pino");
+
+// INIT CLOUD STORAGE
+const projectId = process.env.PROJECT_ID;
+const keyFilename = "key.json";
+
+const storage = new Storage({ projectId: projectId, keyFilename: keyFilename });
+const bucket = storage.bucket("go-complaint-bucket");
 
 const getAllComplaints = errorHandler(async (req, res) => {
 	// GET PARAMS
@@ -102,11 +113,27 @@ const searchComplaint = errorHandler(async (req, res) => {
 			},
 		},
 	});
+	const complaints = await Promise.all(
+		complaintDoc.map(async (c) => {
+			let userComplaint = await User.findOne({
+				where: {
+					id: c.user_id,
+				},
+			});
 
-	return { complaints: complaintDoc };
+			userComplaint = userComplaint.username;
+
+			return { ...c.dataValues, username: userComplaint };
+		})
+	);
+
+	return { complaints };
 });
 
 const addComplaint = errorHandler(async (req, res) => {
+	// MULTER FORM DATA
+	await processFiles(req, res);
+
 	// GET DATA
 	let { complaint, category, location } = req.body;
 	if (!complaint || !category || !location)
@@ -116,16 +143,50 @@ const addComplaint = errorHandler(async (req, res) => {
 	if (complaint.length > 255)
 		throw new HttpError(400, "Complaint Text Data Size Limit Exceeded (255)");
 
+	// IMAGE UPLOAD
+	let fileUrl = null;
+	if (req.files) {
+		fileUrl = [];
+		req.files.forEach((file) => {
+			const fileExt = file.originalname.split(".").pop().toUpperCase();
+			if (
+				fileExt !== "PNG" &&
+				fileExt !== "JPG" &&
+				fileExt !== "JPEG" &&
+				fileExt !== "MP4"
+			)
+				throw new HttpError(400, "File extension not supported");
+
+			const blob = bucket.file(
+				"complaints/" +
+					Date.now() +
+					file.originalname.toLowerCase().split(" ").join("-")
+			);
+			const blobStream = blob.createWriteStream();
+			blobStream.on("finish", () => {
+				const uploadUrl = format(
+					`https://storage.googleapis.com/${bucket.name}/${blob.name}`
+				);
+			});
+			blobStream.end(file.buffer);
+
+			fileUrl.push(
+				`https://storage.googleapis.com/${bucket.name}/${blob.name}`
+			);
+		});
+	}
+
 	// INSERT DATA
 	const complaintDoc = await Complaint.create({
 		user_id: req.userId,
 		complaint: complaint,
 		category: category.toUpperCase(),
 		location: location,
+		file: fileUrl.toString(),
 	});
 
 	// RETURN THE RESULT
-	return { success: true };
+	return { complaint: complaintDoc };
 });
 
 const deleteComplaint = withTransaction(async (req, res) => {

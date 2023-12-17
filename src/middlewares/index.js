@@ -1,3 +1,4 @@
 const { verifyAccessToken } = require("./verifyAccessToken");
+const processFiles = require("./uploadFile")
 
-module.exports = { verifyAccessToken };
+module.exports = { verifyAccessToken, processFiles };
