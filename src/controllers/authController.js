@@ -149,7 +149,7 @@ function createAccessToken(userId) {
 		},
 		process.env.ACCESS_TOKEN_SECRET,
 		{
-			expiresIn: "10m",
+			expiresIn: "30d",
 		}
 	);
 }
