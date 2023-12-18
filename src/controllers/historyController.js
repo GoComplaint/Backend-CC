@@ -12,6 +12,9 @@ const historyComplaint = errorHandler(async (req, res) => {
 
 	if (!limit) {
 		complaints = await Complaint.findAll({
+			where: {
+				user_id: id,
+			},
 			order: [["createdAt", "DESC"]],
 		});
 	} else {
@@ -20,6 +23,9 @@ const historyComplaint = errorHandler(async (req, res) => {
 
 		// GET ALL COMPLAINT
 		complaints = await Complaint.findAll({
+			where: {
+				user_id: id,
+			},
 			order: [["createdAt", "DESC"]],
 			limit: limit,
 			offset: offsetComplaint,

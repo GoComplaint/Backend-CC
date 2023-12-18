@@ -15,7 +15,7 @@ const register = withTransaction(async (req, res, transaction) => {
 			email: email,
 		},
 	});
-	if (findEmail.length !== null) throw new HttpError(400, "Email already registered");
+	if (findEmail) throw new HttpError(400, "Email already registered");
 
 	const salt = await bcrypt.genSalt();
 	const hashPassword = await bcrypt.hash(password, salt);
