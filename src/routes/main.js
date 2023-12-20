@@ -15,7 +15,7 @@ router.post(
 	controllers.complaint.addComplaint
 );
 // PUT
-router.put("/status", verifyAccessToken, controllers.complaint.statusComplaint);
+router.put("/status", controllers.complaint.statusComplaint);
 router.put(
 	"/complaints/:id/like",
 	verifyAccessToken,
@@ -65,9 +65,6 @@ router.get(
 
 // ===========> Analysis
 // GET
-router.get(
-	"/analysis",
-	controllers.analysis.analysisComplaint
-);
+router.get("/analysis", controllers.analysis.analysisComplaint);
 
 module.exports = router;

@@ -204,7 +204,7 @@ const addComplaint = errorHandler(async (req, res) => {
 		"https://ml-dot-go-complaint.et.r.appspot.com/predict",
 		postData
 	);
-	
+
 	// INSERT DATA
 	const complaintDoc = await Complaint.create({
 		user_id: req.userId,
@@ -232,7 +232,7 @@ const deleteComplaint = withTransaction(async (req, res) => {
 	});
 	if (!result) throw new HttpError(400, "ID Not Found");
 
-	// DELETE COMPLAINT + DETAIL + COMMENT
+	// DELETE COMPLAINT + COMMENT
 	await Complaint.destroy({
 		where: {
 			id: id,
