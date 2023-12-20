@@ -28,7 +28,7 @@ const Complaint = db.define(
 		},
 		status: {
 			type: DataTypes.STRING,
-			defaultValue: "N",
+			defaultValue: "O",
 		},
 	},
 	{
