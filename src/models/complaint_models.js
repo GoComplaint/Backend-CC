@@ -20,7 +20,7 @@ const Complaint = db.define(
 			type: DataTypes.STRING,
 		},
 		prediction: {
-			type: DataTypes.STRING,
+			type: DataTypes.FLOAT,
 		},
 		like: {
 			type: DataTypes.INTEGER,

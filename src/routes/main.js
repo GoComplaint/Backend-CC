@@ -63,4 +63,11 @@ router.get(
 	controllers.history.historyComplaint
 );
 
+// ===========> Analysis
+// GET
+router.get(
+	"/analysis",
+	controllers.analysis.analysisComplaint
+);
+
 module.exports = router;

@@ -5,7 +5,8 @@ const { Op } = require("sequelize");
 const { processFiles } = require("../middlewares");
 const { Storage } = require("@google-cloud/storage");
 const { format } = require("util");
-const { P } = require("pino");
+const axios = require("axios");
+const logger = require("../logger");
 
 // INIT CLOUD STORAGE
 const projectId = process.env.PROJECT_ID;
@@ -103,13 +104,32 @@ const getComplaint = errorHandler(async (req, res) => {
 
 const searchComplaint = errorHandler(async (req, res) => {
 	// GET DATA
-	const complaint = req.query.complaint;
-	if (!complaint) throw new HttpError(400, "Incomplete Data");
+	const complaint = req.query.complaint || "";
+	const status = req.query.status || "";
+	const prediction = req.query.prediction || "";
+	let prediction_down_threshold = 0;
+	let prediction_upper_threshold = 100;
+
+	if (!complaint && !status && !prediction)
+		throw new HttpError(400, "Incomplete Data");
+
+	if (prediction.toUpperCase() == "URGENT") {
+		prediction_down_threshold = 50;
+	} else if (prediction.toUpperCase() == "NOT_URGENT") {
+		prediction_upper_threshold = 50;
+	}
 
 	const complaintDoc = await Complaint.findAll({
 		where: {
 			complaint: {
 				[Op.like]: `%${complaint}%`,
+			},
+			status: {
+				[Op.like]: `%${status}%`,
+			},
+			prediction: {
+				[Op.gt]: prediction_down_threshold,
+				[Op.lte]: prediction_upper_threshold,
 			},
 		},
 	});
@@ -176,12 +196,22 @@ const addComplaint = errorHandler(async (req, res) => {
 		});
 	}
 
+	// PREDICTION
+	const postData = {
+		complaint: complaint,
+	};
+	const prediction = await axios.post(
+		"https://ml-dot-go-complaint.et.r.appspot.com/predict",
+		postData
+	);
+	
 	// INSERT DATA
 	const complaintDoc = await Complaint.create({
 		user_id: req.userId,
 		complaint: complaint,
 		category: category.toUpperCase(),
 		location: location,
+		prediction: prediction.data.percentage,
 		file: fileUrl.toString(),
 	});
 
@@ -258,9 +288,10 @@ const statusComplaint = errorHandler(async (req, res) => {
 	if (!id || !status) throw new HttpError(400, "Incomplete Data");
 
 	// STATUS :
-	// N = OPEN
+	// O = OPEN
 	// P = PENDING
 	// Y = COMPLETE
+	// N = CLOSED
 
 	const complaintDoc = await Complaint.findOne({
 		where: {
