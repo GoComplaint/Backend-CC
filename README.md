@@ -1,6 +1,6 @@
-# GoComplaint: Backend
+# GoComplaint
 
-Welcome to the `GoComplaint's Backend Repository`. This repo is where our Backend development get stored and accessed. Our **Backend API** is made using `node.js` and `express.js` as the framework, while the **Machine Learning API** is made using `python` with `fastapi`framework. We use **GCP APP ENGINE** as the deployment solution, **GCP Cloud Storage** as the file stroage solution, and **Cloud SQL** as our MySql Relational Database.
+Welcome to the `GoComplaint's Repository`. This repo is where our Backend development get stored and accessed. Our **Backend API** is made using `node.js` and `express.js` as the framework, while the **Machine Learning API** is made using `python` with `fastapi`framework. We use **GCP APP ENGINE** as the deployment solution, **GCP Cloud Storage** as the file stroage solution, and **Cloud SQL** as our MySql Relational Database.
 
 ## Authors Team ID: `CH2-PS153`
 
@@ -13,6 +13,18 @@ Welcome to the `GoComplaint's Backend Repository`. This repo is where our Backen
 | Kadek Cahyadi Yogachandra          | `C014BSY4091`           | CC | Udayana University |
 | Ahmad Tri Fhatoni          | `A120BSY2579`           | MD | Institut Teknologi Telkom Purwokerto |
 | Mohamad Arrizal          | `A314BSY2524`           | MD | Singaperbangsa Karawang University |
+
+## Mobile App 
+Download our application on this link !
+- Link download : [download](https://drive.google.com/drive/folders/18VBuGSA52nctOnStT5Cdjk8XTI9lrhfs?usp=sharing)
+
+## Web App
+Visit this link to see our already developed GoComplaint's dashboard admin
+- Link web app : [GoComplaint's](http://webapp.go-complaint.et.r.appspot.com/Login/auth)
+
+## Machine Learning Development 
+Develop your our machine learning models using our notebook ! 
+- Link notebook : [GoComplaint's Model](https://colab.research.google.com/drive/1qTyTpG7_saUSceStpUqC_BVNk7cdF9sG?usp=sharing)
 
 # Cloud Infrastructure!
 ![cc-arsitektur](https://github.com/GoComplaint/Backend-CC/assets/99982084/00f0ef61-69c4-4b1c-8815-710a3d33b05d)
