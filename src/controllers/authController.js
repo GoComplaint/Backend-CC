@@ -43,6 +43,7 @@ const register = withTransaction(async (req, res, transaction) => {
 		id: userDoc.id,
 		accessToken,
 		refreshToken,
+		user: userDoc,
 	};
 });
 
@@ -72,6 +73,7 @@ const login = withTransaction(async (req, res, transaction) => {
 		id: userDoc.id,
 		accessToken,
 		refreshToken,
+		user: userDoc,
 	};
 });
 

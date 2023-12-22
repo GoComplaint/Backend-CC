@@ -13,6 +13,10 @@ const User = db.define(
 		password: {
 			type: DataTypes.STRING,
 		},
+		role: {
+			type: DataTypes.STRING,
+			defaultValue: "user",
+		},
 	},
 	{
 		freezeTableName: true,
